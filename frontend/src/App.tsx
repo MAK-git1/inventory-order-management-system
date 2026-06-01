@@ -190,7 +190,7 @@ export default function App() {
         borderTop: '1px solid var(--card-border)',
         margin: '0 1.5rem'
       }}>
-        &copy; 2026 Antigravity Inventory System. Created for technical assessment.
+        &copy; 2026 Tirupati Inventory System. Created for technical assessment.
       </footer>
     </div>
   );
