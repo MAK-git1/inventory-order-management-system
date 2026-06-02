@@ -201,3 +201,80 @@ def test_update_profile_email_already_in_use(test_client, auth_headers, customer
     )
     assert response.status_code == 400
     assert "already in use" in response.json()["detail"]
+
+
+# =========================================================================
+# Auth Signup Role-Based Validation Tests
+# =========================================================================
+
+def test_signup_role_customer(test_client, db_session):
+    """Verify signup with CUSTOMER role succeeds and stores role as lowercase 'customer'."""
+    email = "signup.cust@example.com"
+    payload = {
+        "name": "Signup Customer",
+        "email": email,
+        "phone": "+1-555-0001",
+        "password": "password123",
+        "role": "CUSTOMER"
+    }
+    response = test_client.post("/api/v1/auth/signup", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == email
+    assert data["role"] == "customer"
+    
+    # Check DB entry
+    db_session.expire_all()
+    user = crud_customer.get_by_email(db_session, email=email)
+    assert user is not None
+    assert user.role == "customer"
+
+def test_signup_role_admin(test_client, db_session):
+    """Verify signup with ADMIN role succeeds and stores role as lowercase 'admin'."""
+    email = "signup.admin@example.com"
+    payload = {
+        "name": "Signup Admin",
+        "email": email,
+        "phone": "+1-555-0002",
+        "password": "password123",
+        "role": "ADMIN"
+    }
+    response = test_client.post("/api/v1/auth/signup", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == email
+    assert data["role"] == "admin"
+    
+    # Check DB entry
+    db_session.expire_all()
+    user = crud_customer.get_by_email(db_session, email=email)
+    assert user is not None
+    assert user.role == "admin"
+
+def test_signup_role_invalid(test_client, db_session):
+    """Verify signup with an invalid role returns validation error."""
+    payload = {
+        "name": "Signup Invalid",
+        "email": "invalid.role@example.com",
+        "phone": "+1-555-0003",
+        "password": "password123",
+        "role": "SUPERUSER"
+    }
+    response = test_client.post("/api/v1/auth/signup", json=payload)
+    assert response.status_code == 422
+    errors = response.json()["detail"]
+    assert any("ADMIN" in err.get("msg", "") or "CUSTOMER" in err.get("msg", "") for err in errors)
+
+def test_signup_role_default(test_client, db_session):
+    """Verify signup without a role parameter defaults to 'customer'."""
+    email = "signup.default@example.com"
+    payload = {
+        "name": "Signup Default",
+        "email": email,
+        "phone": "+1-555-0004",
+        "password": "password123"
+    }
+    response = test_client.post("/api/v1/auth/signup", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["role"] == "customer"

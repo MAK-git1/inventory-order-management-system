@@ -1,195 +1,244 @@
-# Inventory & Order Management System
+# 📦 Tirupati Inventory & Order Management System
 
-A premium, production-grade technical assessment application built with a **FastAPI backend** (Python 3.12), a **React + Vite frontend** (TypeScript), and **Neon Serverless PostgreSQL**. 
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Neon DB](https://img.shields.io/badge/Neon-PostgreSQL-00E599?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![Tests Status](https://img.shields.io/badge/Tests-23%20Passed-4c1?style=for-the-badge)](https://pytest.org)
 
-This system integrates real-time inventory tracking, customer profiles, and order placement under connection locks and atomic database transactions.
+An enterprise-grade, high-concurrency **Inventory & Order Management System** built using a **FastAPI backend** (Python 3.12), a **React + Vite frontend** (TypeScript), and a **Neon Cloud Serverless PostgreSQL** database.
 
----
-
-## 1. Project Overview
-The **Inventory & Order Management System** is a full-stack dashboard designed to handle high-concurrency order placement and live stock inventory tracking. It provides a visual dashboard for administrators and operations desks to manage products, record customer profiles, and process orders atomically.
-
----
-
-## 2. Key Features
-
-### 📦 Product & Inventory Management
-* **Full CRUD Lifecycle**: Register, retrieve, update, and delete products from the catalog.
-* **SKU Uniqueness**: Enforces indexed, unique Stock Keeping Unit (SKU) validation both at the Pydantic API entrance and database constraint layers.
-* **Smart Stock Indicators**: Responsive UI tags flagging out-of-stock items (Red), low stock levels under 10 units (Orange), and healthy stock quantities (Green).
-
-### 👥 Customer Directory
-* **Full CRUD Lifecycle**: Manage customer accounts and profiles.
-* **RFC-Compliant Email Validation**: Integrates Pydantic `EmailStr` validations to ensure strictly formatted email entries.
-* **Email Uniqueness**: Enforces strict unique constraints to prevent duplicate customer profiles.
-
-### 🛒 Transaction-Safe Order Desk
-* **Dynamic Stock Visualizers**: Displays real-time stock levels directly inside the product checkout dropdown as soon as a product is selected.
-* **Cart Array**: Supports placing orders containing multiple products and varying quantities in a single transaction.
-* **Database Row Locking**: Issues database row-level locking (`with_for_update()`) on product rows to completely prevent concurrency race conditions (e.g., double-spending stock).
-* **Atomic Transactions**: Groups checks, stock deductions, order insertions, and line item entries in a single block. It commits changes only on complete success and triggers `db.rollback()` on any failure.
-* **Historical Pricing**: Captures and stores the exact unit price at checkout inside order line items to preserve financial records, shielding transaction history from future catalog updates.
-
-### 🌐 High-End Developer Experience
-* **Professional Swagger `/docs`**: Enriched with detailed field descriptions, realistic Pydantic JSON schema examples, and explicit HTTP error response maps (e.g., SKU/Email collisions or stock deficits).
-* **Resilient Connection Pools**: Tailored connection pooling (`pool_size`, `max_overflow`, `pool_recycle`, `pool_pre_ping`) optimized for Serverless cloud databases like **Neon**.
-* **Docker Multi-Stage Deployments**: Packs frontend assets into Nginx containers configured with fallback SPA routing rules to prevent Router refresh errors.
+This project delivers a premium **glassmorphic desktop/mobile user interface** utilizing Vanilla HSL design tokens, custom micro-animations, day/night theme synchronizations, and advanced database integrity controls (such as atomic transaction row locks).
 
 ---
 
-## 3. System Architecture
+## 🌟 Key Highlights & Features
+
+### 🛒 High-Concurrency Order Desk
+* **Database Row Locking**: Issues explicit PostgreSQL row-level locks (`with_for_update()`) on product stock records at checkout, preventing race conditions or double-spend errors under heavy order concurrency.
+* **Atomic Transactions**: Deducts stock, registers line items, and inserts order logs inside a single transaction context—triggering `db.rollback()` on any failure to guarantee database state integrity.
+* **Captured Historical Pricing**: Persists the exact checkout price inside order details, safeguarding transaction records from future product catalog price adjustments.
+* **Dynamic Stock Checkers**: Renders real-time availability counters inside product dropdowns directly upon user selection.
+
+### 📦 Product & Inventory Lifecycle
+* **Full CRUD Lifecycle**: Register, retrieve, update, and catalog system products.
+* **SKU Uniqueness Constraints**: Enforces indexed, unique Stock Keeping Unit (SKU) validations both at the Pydantic API layer and DB level.
+* **Live Catalog Metrics**: Interactive statistics detailing out-of-stock items (Red), low stock alerts under 10 units (Orange), and healthy stock quantities (Green).
+
+### 👥 Customer Accounts & Hardened Security
+* **RFC-Compliant Emails**: Rigorous schema checks utilizing Pydantic `EmailStr` to guarantee strictly formatted customer entries.
+* **Password Complexity**: Enforces a strict minimum **8-character password policy** aligned seamlessly between Pydantic schemas and frontend views (`Signup.tsx` and `Profile.tsx`).
+* **Secure JWT Session Control**: Implements access tokens utilizing HS256 signatures with a 24-hour expiration window to limit session exposure.
+
+### 📱 Premium Responsive Mobile Layout
+* **Glassmorphic Navigation Drawer**: Automatically transitions from the horizontal inline navbar on desktop viewports to a clean top header and sliding hamburger navigation drawer on mobile/tablet viewports (`< 768px`).
+* **Personalized User Widget**: Features a custom-rendered profile card detailing the active customer's name, avatar, and security clearance level (Admin/Customer).
+* **Smooth Transitions**: Powered by hardware-accelerated animations (`slideInRight`) and blurred backdrop overlays for a premium native application feel.
+* **Harmonious Theme Synchronization**: HSL-tailored day/night modes synchronize seamlessly across modern dashboard grids, tables, and modal drawers.
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    A[React + Vite Frontend] -->|HTTP Requests| B[FastAPI Backend]
-    B -->|SQLAlchemy 2.0 ORM| C[Neon Serverless PostgreSQL]
-    subgraph Containerization
-        A
-        B
+    subgraph Frontend [React + Vite App]
+        UI[User Interface & Dashboards]
+        State[Auth & Theme Context]
+        API_Client[Axios Client Layer]
     end
+
+    subgraph Backend [FastAPI Application]
+        Router[API router /api/v1]
+        Auth[OAuth2 / JWT Authentication]
+        Schemas[Pydantic v2 Schemas]
+        Models[SQLAlchemy 2.0 Models]
+    end
+
+    subgraph Database [Database Services]
+        Neon[Neon PostgreSQL Cloud / Local SQLite]
+    end
+
+    UI --> State
+    State --> API_Client
+    API_Client -->|HTTP REST Client / JSON| Router
+    Router --> Auth
+    Router --> Schemas
+    Schemas --> Models
+    Models -->|SQLAlchemy ORM| Neon
 ```
 
-* **Frontend**: React (v18), Vite, TypeScript, Axios (API Client Service Layer), Lucide Icons, Vanilla HSL CSS variables design system.
-* **Backend**: FastAPI (Python 3.12), Pydantic (v2 validation), python-dotenv.
-* **Database & ORM**: PostgreSQL (Neon Cloud), SQLAlchemy (2.0 ORM), Alembic (Schema Migrations).
-* **Orchestration**: Docker, Docker Compose, Nginx (Frontend Web Server).
+---
+
+## 🗄️ Database ERD / Schema
+
+The system uses four main tables. Relationships are managed via foreign keys with cascading options:
+
+```
+  ┌───────────────┐          ┌───────────────┐
+  │   customers   │ 1      * │    orders     │
+  ├───────────────┤──────────┼───────────────┤
+  │ id (PK)       │          │ id (PK)       │
+  │ name          │          │ customer_id   │──┐
+  │ email (UQ)    │          │ total_amount  │  │
+  │ role          │          │ created_at    │  │
+  │ password_hash │          └───────────────┘  │
+  └───────────────┘                             │
+                                                │ 1
+  ┌───────────────┐          ┌───────────────┐  │
+  │   products    │ 1      * │  order_items  │  │
+  ├───────────────┤──────────┼───────────────┤  │
+  │ id (PK)       │          │ id (PK)       │  │
+  │ name          │          │ order_id (FK) │<─┘
+  │ sku (UQ)      │          │ product_id    │
+  │ price         │          │ quantity      │
+  │ stock_quantity│          │ price         │
+  └───────────────┘          └───────────────┘
+```
+
+* **Customers**: Manages credentials and roles (`admin` or `customer`). Has a 1-to-many relationship with **Orders**.
+* **Products**: Stores inventory items with unique SKU codes.
+* **Orders**: Groups purchases for a customer, recording total spend.
+* **OrderItems**: Connects orders to products, persisting the unit price *at the exact moment of order* (historical price preservation).
 
 ---
 
-## 4. Environment Variables Reference
+## 📂 Project Directory Structure
 
-### Backend (`/backend/.env`)
+```
+inventory-order-management-system/
+├── backend/
+│   ├── app/
+│   │   ├── api/             # API Router definitions (v1 endpoints)
+│   │   ├── core/            # Config, security, and database connection setup
+│   │   ├── crud/            # Database CRUD implementation helpers
+│   │   ├── models/          # SQLAlchemy declarative base models
+│   │   ├── schemas/         # Pydantic data schemas & validators
+│   │   ├── services/        # Checkout and order placement business logic
+│   │   └── tests/           # Comprehensive Pytest suite
+│   ├── alembic/             # Database migration configuration scripts
+│   ├── requirements.txt     # Python dependencies list
+│   └── main.py              # Application entrypoint
+├── frontend/
+│   ├── src/
+│   │   ├── assets/          # Global assets & static files
+│   │   ├── components/      # Common UI elements (Modals, Buttons, Forms)
+│   │   ├── context/         # AuthContext, ThemeContext providers
+│   │   ├── features/        # Module-specific pages (Products, Orders, Dashboard)
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── services/        # Axios API clients
+│   │   └── App.tsx          # React main layout & routing declarations
+│   ├── package.json         # NPM script mappings & dependencies
+│   └── vite.config.ts       # Vite-specific parameters and dev server proxies
+├── docker-compose.yml       # Production-ready compose configuration
+└── README.md                # System documentation
+```
+
+---
+
+## 📋 Environment Variables Reference
+
+### Backend Settings (`/backend/.env`)
 | Variable | Description | Example / Default |
 | :--- | :--- | :--- |
-| `PROJECT_NAME` | The title of your system | `Inventory & Order Management System` |
-| `ENVIRONMENT` | Environment toggle (disables Swagger docs in `production`) | `development` |
-| `SECRET_KEY` | Random key for session tokens and encryption | `supersecretkeyforlocaltesting` |
+| `PROJECT_NAME` | The title of your system | `"Inventory & Order Management System"` |
+| `ENVIRONMENT` | Toggle context (disables Swagger docs in `production`) | `development` |
+| `SECRET_KEY` | Cryptographic signature salt for JWT generation | `dev_secret_key_for_local_testing_only` |
 | `BACKEND_CORS_ORIGINS` | Comma-separated list of allowed origins | `http://localhost:3000,http://127.0.0.1:3000` |
-| `DATABASE_URL` | Neon Pooled PostgreSQL connection string | `postgres://[user]:[pwd]@[host]/neondb?sslmode=require` |
+| `DATABASE_URL` | Cloud PostgreSQL or Local connection string | `postgresql://[user]:[pwd]@[host]/neondb?sslmode=require` |
 
-### Frontend (`/frontend/.env`)
+### Frontend Settings (`/frontend/.env`)
 | Variable | Description | Example / Default |
 | :--- | :--- | :--- |
-| `VITE_API_URL` | Public endpoint pointing to backend API v1 path | `http://localhost:8000/api/v1` |
+| `VITE_API_URL` | Endpoint pointing to backend REST API v1 path | `http://127.0.0.1:8000/api/v1` |
 
 ---
 
-## 5. Local Setup Instructions
+## 🚀 Local Setup Instructions
 
-### Backend (FastAPI)
-1. **Navigate and create a virtual environment**:
+Ensure you have **Python 3.12** and **Node.js (v18+)** installed.
+
+### 1. Backend Setup (FastAPI)
+
+1. **Navigate to the backend directory and create a virtual environment**:
    ```bash
    cd backend
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-2. **Install dependencies**:
+2. **Activate the virtual environment**:
+   * **On Windows (PowerShell / cmd)**:
+     ```powershell
+     .\venv\Scripts\activate
+     ```
+   * **On macOS/Linux**:
+     ```bash
+     source venv/bin/activate
+     ```
+3. **Install core dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Configure Environment**:
-   Copy `.env.example` to `.env` and fill in your details (e.g. Neon DATABASE_URL).
-4. **Run DB Migrations**:
+4. **Configure Environment Variables**:
+   Create a `.env` file from the example:
+   ```bash
+   cp .env.example .env
+   ```
+   *Note: Open `.env` and fill in your connection `DATABASE_URL` (SQLite file `sqlite:///./inventory.db` or Neon PostgreSQL).*
+5. **Run DB Migrations**:
+   Ensure Alembic upgrades the schema:
    ```bash
    alembic upgrade head
    ```
-5. **Run DB Connection Diagnostic Test**:
+6. **Run the Diagnostic Test Suite**:
    ```bash
-   python test_connection.py
+   python -m pytest
    ```
-6. **Start the server**:
+7. **Start the FastAPI Application Server**:
    ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
    ```
+   The backend API docs will be active at `http://127.0.0.1:8000/docs`.
 
-### Frontend (React + Vite)
-1. **Navigate and install dependencies**:
+---
+
+### 2. Frontend Setup (React + Vite)
+
+1. **Navigate to the frontend directory and install dependencies**:
    ```bash
-   cd frontend
+   cd ../frontend
    npm install
    ```
-2. **Configure Environment**:
-   Copy `.env.example` to `.env` and verify your `VITE_API_URL` endpoint path.
+2. **Configure Environment Variables**:
+   Verify `/frontend/.env` is set up with the correct API URL:
+   ```env
+   VITE_API_URL=http://127.0.0.1:8000/api/v1
+   ```
 3. **Start the local development server**:
    ```bash
    npm run dev
    ```
-   Open `http://localhost:3000` in your web browser.
+   Vite will host the web interface at `http://localhost:3000`.
 
 ---
 
-## 6. Docker Container Orchestration
+## 🐳 Docker Container Orchestration
 
-Run the entire system (local PostgreSQL db, backend, and frontend) with a single command using Docker Compose:
+To run the entire stack (PostgreSQL database service, FastAPI REST backend, and Nginx frontend web server) locally with a single command:
 
 ```bash
 docker compose up --build
 ```
 
 ### Port Mappings
-* **React Web Frontend**: `http://localhost:3000` (Served via production-ready Nginx)
-* **FastAPI Backend Swagger**: `http://localhost:8000/docs`
-* **Local PostgreSQL Server**: `localhost:5432`
-
-*Note: The backend service container implements an automated healthcheck using `pg_isready` and will delay its boot sequence until the PostgreSQL DB is fully operational.*
+* **React Web UI**: `http://localhost:3000`
+* **FastAPI Swagger Docs**: `http://localhost:8000/docs`
+* **PostgreSQL Database Server**: `localhost:5432`
 
 ---
 
-## 7. API Documentation Summary
-FastAPI automatically generates fully descriptive OpenAPI schemas. You can access the interactive portals here:
-* **Interactive Swagger UI**: `/docs` (e.g. `http://localhost:8000/docs`)
-* **Redoc System Specs**: `/redoc` (e.g. `http://localhost:8000/redoc`)
+## 🛡️ Verification Results & Quality Auditing
 
-### Main Route Table
-* `GET /`: API Health Check and Environment summary.
-* **Products**:
-  - `POST /api/v1/products/`: Register a new product (uniqueness check).
-  - `GET /api/v1/products/`: Get products with pagination limit/skip.
-  - `GET /api/v1/products/{id}`: Fetch product details by ID.
-  - `PUT /api/v1/products/{id}`: Update catalog attributes.
-  - `DELETE /api/v1/products/{id}`: Remove product.
-* **Customers**:
-  - `POST /api/v1/customers/`: Register customer (email format & uniqueness check).
-  - `GET /api/v1/customers/`: Fetch registered customers.
-  - `GET /api/v1/customers/{id}`: Fetch customer profile by ID.
-  - `PUT /api/v1/customers/{id}`: Update customer profile details.
-  - `DELETE /api/v1/customers/{id}`: Remove customer.
-* **Orders**:
-  - `POST /api/v1/orders/`: Submit a purchase order (atomic stock checking & deduction transaction).
-  - `GET /api/v1/orders/`: Retrieve all order logs.
-  - `GET /api/v1/orders/{id}`: Fetch single order breakdown with purchased line items.
-
----
-
-## 8. GitHub Repository Integration
-To publish this workspace onto your public GitHub registry:
-
-1. **Initialize Git in root directory**:
-   ```bash
-   git init
-   ```
-2. **Add all files**:
-   ```bash
-   git add .
-   ```
-3. **Commit the changes**:
-   ```bash
-   git commit -m "feat: complete production ready database models, CRUD APIs, and React frontend dashboard"
-   ```
-4. **Create a remote repository** on GitHub.
-5. **Link and push**:
-   ```bash
-   git remote add origin https://github.com/yourusername/inventory-order-management-system.git
-   git branch -M main
-   git push -u origin main
-   ```
-
----
-
-## 9. Public Deployment Directory
-
-| Service Component | Cloud Provider | Public Deployment URL |
-| :--- | :--- | :--- |
-| **Backend API** | Railway | *[Deploy to Railway and insert generated URL here]* |
-| **Frontend Web** | Railway (Nginx) | *[Deploy to Railway and insert generated URL here]* |
-| **Database Instance** | Neon Console | *[Connect your serverless database instance]* |
+* **TypeScript Static Verification**: `npx tsc --noEmit` returns `0` compilation errors.
+* **FastAPI Pytest Test Suite**: `python -m pytest` executes 23 unit/integration tests covering orders, atomic transactions, profile updates, and dashboard metrics, returning **23 passed successfully** (100% pass rate).

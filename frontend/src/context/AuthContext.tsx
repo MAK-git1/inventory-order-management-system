@@ -15,7 +15,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, phone: string | null, password: string) => Promise<void>;
+  signup: (name: string, email: string, phone: string | null, password: string, role: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (name: string, email: string, phone: string | null, password: string) => {
+  const signup = async (name: string, email: string, phone: string | null, password: string, role: string) => {
     try {
       // 1. Submit signup request to register customer
       await apiClient.post('/auth/signup', {
@@ -74,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         phone: phone || null,
         password,
+        role,
       });
 
       // 2. Perform automatic login after successful registration

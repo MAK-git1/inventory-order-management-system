@@ -25,7 +25,7 @@ export default function Profile() {
     // Client side validations
     if (!name.trim()) return setError('Full Name is required.');
     if (!email.trim()) return setError('Email Address is required.');
-    if (password && password.length < 6) return setError('New Password must be at least 6 characters.');
+    if (password && password.length < 8) return setError('New Password must be at least 8 characters.');
     if (password && password !== confirmPassword) return setError('Passwords do not match.');
 
     setLoading(true);
@@ -205,7 +205,7 @@ export default function Profile() {
               </div>
               <input
                 type="password"
-                placeholder="New Password (min 6 characters)"
+                placeholder="New Password (min 8 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{

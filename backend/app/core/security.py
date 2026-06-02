@@ -19,7 +19,8 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days session lifespan default
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day session lifespan default
+
 
 def verify_password(plain_password: str, hashed_password: str | None) -> bool:
     """Verifies that a plain text password matches a stored hashed password."""

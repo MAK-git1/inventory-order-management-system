@@ -3,7 +3,7 @@
 # Provides detailed descriptions and JSON schema examples to enrich Swagger interactive docs.
 
 from datetime import datetime
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 
 class CustomerBase(BaseModel):
     name: str = Field(
@@ -36,12 +36,27 @@ class CustomerCreate(CustomerBase):
 
 class CustomerSignUp(CustomerBase):
     """Schema used to register a new customer user with a password."""
+    role: str = Field(
+        "customer",
+        description="The user's authorization role ('admin' or 'customer')",
+        examples=["customer"]
+    )
     password: str = Field(
         ..., 
-        min_length=6, 
-        description="The customer's secret login password (minimum 6 characters)",
+        min_length=8, 
+        description="The customer's secret login password (minimum 8 characters)",
         examples=["superSecret123"]
     )
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        if not isinstance(v, str):
+            raise ValueError("Role must be a string")
+        role_val = v.strip().upper()
+        if role_val not in ("ADMIN", "CUSTOMER"):
+            raise ValueError("Role must be either ADMIN or CUSTOMER")
+        return role_val.lower()
 
 class CustomerUpdate(BaseModel):
     """Schema used to update specific attributes of an existing customer profile."""
@@ -53,8 +68,9 @@ class ProfileUpdate(BaseModel):
     """Schema used to update the logged-in customer's profile details."""
     name: str | None = Field(None, min_length=1, max_length=255, examples=["Jane Smith"])
     email: EmailStr | None = Field(None, examples=["jane.smith@example.com"])
-    password: str | None = Field(None, min_length=6, description="Optional new password", examples=["newSecret123"])
+    password: str | None = Field(None, min_length=8, description="Optional new password (minimum 8 characters)", examples=["newSecret123"])
     phone: str | None = Field(None, max_length=50, examples=["+1-555-0200"])
+
 
 class CustomerResponse(CustomerBase):
     """Schema representing a customer profile returned in API responses."""

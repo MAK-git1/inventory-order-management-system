@@ -10,7 +10,7 @@ import Profile from './features/profile/Profile';
 import Login from './features/auth/Login';
 import Signup from './features/auth/Signup';
 import ProtectedRoute from './routes/ProtectedRoute';
-import { Package, Users, ShoppingCart, Database, Sun, Moon, LogOut, Loader2, Home, User } from 'lucide-react';
+import { Package, Users, ShoppingCart, Database, Sun, Moon, LogOut, Loader2, Home, User, Menu, X } from 'lucide-react';
 
 function NavigationMenu() {
   const { user, logout } = useAuth();
@@ -21,6 +21,8 @@ function NavigationMenu() {
     return (saved === 'dark' || saved === 'light') ? saved : 'light';
   });
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark-theme');
@@ -29,6 +31,10 @@ function NavigationMenu() {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
@@ -54,7 +60,7 @@ function NavigationMenu() {
   if (!user) return null;
 
   return (
-    <header className="glass-card app-header" style={{ justifyContent: 'space-between' }}>
+    <header className="glass-card app-header">
       {/* LOGO */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{
@@ -74,7 +80,9 @@ function NavigationMenu() {
             background: 'linear-gradient(90deg, #a78bfa, #22d3ee)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.025em'
+            letterSpacing: '-0.025em',
+            margin: 0,
+            lineHeight: 1.2
           }}>
             Tirupati Inventory
           </h1>
@@ -82,8 +90,8 @@ function NavigationMenu() {
         </div>
       </div>
 
-      {/* NAV LINKS */}
-      <nav className="app-nav" style={{ gap: '0.5rem', display: 'flex', alignItems: 'center' }}>
+      {/* DESKTOP NAV LINKS */}
+      <nav className="app-nav desktop-nav" style={{ gap: '0.5rem', display: 'flex', alignItems: 'center' }}>
         <Link to="/dashboard" style={navButtonStyle('/dashboard')}>
           <Home size={16} /> Dashboard
         </Link>
@@ -189,6 +197,292 @@ function NavigationMenu() {
           <LogOut size={16} />
         </button>
       </nav>
+
+      {/* MOBILE CONTROLS */}
+      <div className="mobile-nav-controls" style={{ display: 'none', alignItems: 'center', gap: '0.75rem' }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--card-border)',
+            borderRadius: '8px',
+            padding: '0.6rem',
+            color: 'var(--text-primary)',
+            cursor: 'pointer',
+            transition: 'var(--transition-smooth)'
+          }}
+          title={theme === 'dark' ? 'Toggle Day Mode' : 'Toggle Night Mode'}
+        >
+          {theme === 'dark' ? <Sun size={16} color="#fbbf24" /> : <Moon size={16} color="#a78bfa" />}
+        </button>
+        <button
+          onClick={() => setIsMobileMenuOpen(prev => !prev)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--card-border)',
+            borderRadius: '8px',
+            padding: '0.6rem',
+            color: 'var(--text-primary)',
+            cursor: 'pointer',
+            transition: 'var(--transition-smooth)'
+          }}
+          aria-label="Toggle navigation menu"
+        >
+          {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
+      </div>
+
+      {/* MOBILE SIDEBAR DRAWER OVERLAY */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-drawer-overlay open" 
+          onClick={() => setIsMobileMenuOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            transition: 'opacity 0.3s ease'
+          }}
+        >
+          <div 
+            className="mobile-drawer" 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '280px',
+              height: '100%',
+              backgroundColor: 'var(--background-dark)',
+              borderLeft: '1px solid var(--card-border)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '1.5rem',
+              boxSizing: 'border-box',
+              position: 'relative',
+              boxShadow: 'var(--shadow-lg)'
+            }}
+          >
+            {/* Drawer Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                  padding: '0.4rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Database size={16} color="#fff" />
+                </div>
+                <span style={{
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  background: 'linear-gradient(90deg, #a78bfa, #22d3ee)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '-0.025em'
+                }}>
+                  Tirupati Console
+                </span>
+              </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--card-border)',
+                  borderRadius: '50%',
+                  padding: '0.4rem',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Drawer User Info */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid var(--card-border)',
+              borderRadius: '12px',
+              padding: '0.75rem 1rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #c084fc, #6366f1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                color: '#fff',
+                fontSize: '1rem'
+              }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {user.name}
+                </span>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  color: user.role === 'admin' ? '#f43f5e' : '#10b981',
+                  letterSpacing: '0.05em'
+                }}>
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            {/* Drawer Navigation Links */}
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+              <Link 
+                to="/dashboard" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  color: isActive('/dashboard') ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: isActive('/dashboard') ? 'var(--primary)' : 'transparent',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: '0.925rem',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                <Home size={18} /> Dashboard
+              </Link>
+              <Link 
+                to="/products" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  color: isActive('/products') ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: isActive('/products') ? 'var(--primary)' : 'transparent',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: '0.925rem',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                <Package size={18} /> Products
+              </Link>
+              {user.role === 'admin' && (
+                <Link 
+                  to="/customers" 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.8rem 1rem',
+                    borderRadius: '8px',
+                    color: isActive('/customers') ? '#fff' : 'var(--text-secondary)',
+                    backgroundColor: isActive('/customers') ? 'var(--primary)' : 'transparent',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    fontSize: '0.925rem',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  <Users size={18} /> Customers
+                </Link>
+              )}
+              <Link 
+                to="/orders" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  color: isActive('/orders') ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: isActive('/orders') ? 'var(--primary)' : 'transparent',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: '0.925rem',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                <ShoppingCart size={18} /> Orders
+              </Link>
+              <Link 
+                to="/profile" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  color: isActive('/profile') ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: isActive('/profile') ? 'var(--primary)' : 'transparent',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: '0.925rem',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                <User size={18} /> Profile
+              </Link>
+            </nav>
+
+            {/* Drawer Logout Action */}
+            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--card-border)' }}>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  logout();
+                  navigate('/login');
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  width: '100%',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '8px',
+                  padding: '0.85rem',
+                  color: '#f87171',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  transition: 'var(--transition-smooth)'
+                }}
+              >
+                <LogOut size={16} /> Logout Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

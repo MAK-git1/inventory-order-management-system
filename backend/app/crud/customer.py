@@ -18,6 +18,7 @@ class CRUDCustomer(CRUDBase[Customer, CustomerCreate, CustomerUpdate]):
             name=obj_in.name,
             email=obj_in.email,
             phone=obj_in.phone,
+            role=obj_in.role,
             hashed_password=get_password_hash(obj_in.password),
         )
         db.add(db_obj)

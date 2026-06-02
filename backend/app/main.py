@@ -30,14 +30,15 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 else:
-    # Safe default if no origins are registered explicitly
+    # Safe default if no origins are registered explicitly (avoids wildcard runtime error with credentials)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
 
 # Include master API Router mapping endpoints
 app.include_router(api_router, prefix=settings.API_V1_STR)
