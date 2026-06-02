@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.crud.product import product as crud_product
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
+from app.models.customer import Customer
 
 router = APIRouter()
 
@@ -31,7 +32,8 @@ router = APIRouter()
 def create_product(
     *,
     db: Session = Depends(deps.get_db),
-    product_in: ProductCreate
+    product_in: ProductCreate,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> ProductResponse:
     existing_product = crud_product.get_by_sku(db, sku=product_in.sku)
     if existing_product:
@@ -105,7 +107,8 @@ def update_product(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    product_in: ProductUpdate
+    product_in: ProductUpdate,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> ProductResponse:
     product_record = crud_product.get(db=db, id=id)
     if not product_record:
@@ -141,7 +144,8 @@ def update_product(
 def delete_product(
     *,
     db: Session = Depends(deps.get_db),
-    id: int
+    id: int,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> ProductResponse:
     product_record = crud_product.get(db=db, id=id)
     if not product_record:

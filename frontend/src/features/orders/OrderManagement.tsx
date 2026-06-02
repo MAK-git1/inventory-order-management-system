@@ -3,6 +3,7 @@ import { ordersService, OrderResponse, OrderItemCreate } from '../../services/or
 import { productsService, Product } from '../../services/products';
 import { customersService, Customer } from '../../services/customers';
 import { ShoppingBag, Loader, AlertTriangle, CheckCircle, Plus, Trash2, ArrowRight, Calendar } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface CartItem extends OrderItemCreate {
   name: string;
@@ -11,6 +12,7 @@ interface CartItem extends OrderItemCreate {
 }
 
 export default function OrderManagement() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -30,21 +32,36 @@ export default function OrderManagement() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchInitialData();
-  }, []);
+    if (user) {
+      fetchInitialData();
+    }
+  }, [user]);
 
   const fetchInitialData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [ordersData, productsData, customersData] = await Promise.all([
+      const promises: [Promise<OrderResponse[]>, Promise<Product[]>, Promise<Customer[]>?] = [
         ordersService.getAll(),
-        productsService.getAll(),
-        customersService.getAll()
-      ]);
-      setOrders(ordersData);
-      setProducts(productsData);
-      setCustomers(customersData);
+        productsService.getAll()
+      ];
+
+      if (user?.role === 'admin') {
+        promises.push(customersService.getAll());
+      }
+
+      const results = await Promise.all(promises);
+      setOrders(results[0]);
+      setProducts(results[1]);
+
+      if (user?.role === 'admin') {
+        setCustomers(results[2] || []);
+      } else {
+        setCustomers([]);
+        if (user) {
+          setSelectedCustomerId(user.id.toString());
+        }
+      }
     } catch (err: any) {
       setError('Failed to fetch data required for order desk operations.');
     } finally {
@@ -232,31 +249,49 @@ export default function OrderManagement() {
 
             <form onSubmit={handlePlaceOrder}>
               {/* Customer Selector */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                  Select Customer
-                </label>
-                <select
-                  value={selectedCustomerId}
-                  onChange={(e) => setSelectedCustomerId(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
+              {user?.role === 'admin' ? (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                    Select Customer
+                  </label>
+                  <select
+                    value={selectedCustomerId}
+                    onChange={(e) => setSelectedCustomerId(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      backgroundColor: 'rgba(22, 28, 45, 0.8)',
+                      border: '1px solid var(--card-border)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      color: '#fff',
+                      outline: 'none',
+                      fontSize: '0.95rem'
+                    }}
+                  >
+                    <option value="">-- Choose Customer --</option>
+                    {customers.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                    Ordering As
+                  </label>
+                  <div style={{
                     padding: '0.75rem',
-                    backgroundColor: 'rgba(22, 28, 45, 0.8)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
                     border: '1px solid var(--card-border)',
                     borderRadius: 'var(--border-radius-sm)',
-                    color: '#fff',
-                    outline: 'none',
-                    fontSize: '0.95rem'
-                  }}
-                >
-                  <option value="">-- Choose Customer --</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
-                  ))}
-                </select>
-              </div>
+                    fontSize: '0.95rem',
+                    fontWeight: 500
+                  }}>
+                    {user?.name} ({user?.email})
+                  </div>
+                </div>
+              )}
 
               {/* Product selector & quantity section */}
               <div style={{
@@ -470,7 +505,7 @@ export default function OrderManagement() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {orders.map(order => {
-                  const cust = customers.find(c => c.id === order.customer_id);
+                  const cust = user?.role === 'admin' ? customers.find(c => c.id === order.customer_id) : user;
                   return (
                     <div key={order.id} className="glass-card" style={{
                       padding: '1rem',

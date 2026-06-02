@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.crud.order import order as crud_order
 from app.schemas.order import OrderCreate, OrderResponse
+from app.models.customer import Customer
 
 router = APIRouter()
 
@@ -36,8 +37,15 @@ router = APIRouter()
 def create_order(
     *,
     db: Session = Depends(deps.get_db),
-    order_in: OrderCreate
+    order_in: OrderCreate,
+    current_user: Customer = Depends(deps.get_current_customer)
 ) -> OrderResponse:
+    # Store customer_id from authenticated user
+    if current_user.role != "admin":
+        order_in.customer_id = current_user.id
+    elif order_in.customer_id is None:
+        order_in.customer_id = current_user.id
+        
     return crud_order.create_order_with_transaction(db=db, obj_in=order_in)
 
 @router.get(
@@ -57,13 +65,20 @@ def create_order(
 def read_order(
     *,
     db: Session = Depends(deps.get_db),
-    id: int
+    id: int,
+    current_user: Customer = Depends(deps.get_current_user)
 ) -> OrderResponse:
     order_record = crud_order.get(db=db, id=id)
     if not order_record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found."
+        )
+    # Check ownership
+    if current_user.role != "admin" and order_record.customer_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have enough privileges."
         )
     return order_record
 
@@ -76,6 +91,10 @@ def read_order(
 def read_orders(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    current_user: Customer = Depends(deps.get_current_user)
 ) -> list[OrderResponse]:
-    return crud_order.get_multi(db=db, skip=skip, limit=limit)
+    if current_user.role == "admin":
+        return crud_order.get_multi(db=db, skip=skip, limit=limit)
+    else:
+        return crud_order.get_by_customer(db=db, customer_id=current_user.id, skip=skip, limit=limit)

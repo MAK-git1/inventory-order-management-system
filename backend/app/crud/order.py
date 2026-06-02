@@ -103,4 +103,8 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, None]):
                 detail=f"An unexpected transaction error occurred: {str(e)}"
             )
 
+    def get_by_customer(self, db: Session, *, customer_id: int, skip: int = 0, limit: int = 100) -> list[Order]:
+        """Fetch pagination list of orders matching target customer_id."""
+        return db.query(self.model).filter(self.model.customer_id == customer_id).offset(skip).limit(limit).all()
+
 order = CRUDOrder(Order)

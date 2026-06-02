@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { productsService, Product } from '../../services/products';
 import { Plus, Edit2, Trash2, Search, X, Loader, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProductManagement() {
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -144,26 +146,28 @@ export default function ProductManagement() {
             Manage your store catalog and monitor available stock.
           </p>
         </div>
-        <button
-          onClick={handleOpenCreateModal}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            backgroundColor: 'var(--primary)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 'var(--border-radius-sm)',
-            padding: '0.75rem 1.25rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'var(--transition-smooth)'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-hover)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
-        >
-          <Plus size={18} /> Add Product
-        </button>
+        {user?.role === 'admin' && (
+          <button
+            onClick={handleOpenCreateModal}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              backgroundColor: 'var(--primary)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 'var(--border-radius-sm)',
+              padding: '0.75rem 1.25rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'var(--transition-smooth)'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-hover)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+          >
+            <Plus size={18} /> Add Product
+          </button>
+        )}
       </div>
 
       {/* Search Bar Controls */}
@@ -227,7 +231,7 @@ export default function ProductManagement() {
                 <th style={{ padding: '1rem' }}>Price</th>
                 <th style={{ padding: '1rem' }}>Stock Status</th>
                 <th style={{ padding: '1rem' }}>Date Added</th>
-                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+                {user?.role === 'admin' && <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -274,56 +278,58 @@ export default function ProductManagement() {
                     <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       {new Date(product.created_at).toLocaleDateString()}
                     </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button
-                          onClick={() => handleOpenEditModal(product)}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid var(--card-border)',
-                            borderRadius: '6px',
-                            padding: '0.4rem',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            transition: 'var(--transition-smooth)'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--primary)';
-                            e.currentTarget.style.color = '#fff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--card-border)';
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                          }}
-                          title="Edit Product"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmId(product.id)}
-                          style={{
-                            background: 'rgba(239, 68, 68, 0.05)',
-                            border: '1px solid rgba(239, 68, 68, 0.15)',
-                            borderRadius: '6px',
-                            padding: '0.4rem',
-                            color: 'var(--danger)',
-                            cursor: 'pointer',
-                            transition: 'var(--transition-smooth)'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--danger)';
-                            e.currentTarget.style.color = '#fff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
-                            e.currentTarget.style.color = 'var(--danger)';
-                          }}
-                          title="Delete Product"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {user?.role === 'admin' && (
+                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button
+                            onClick={() => handleOpenEditModal(product)}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid var(--card-border)',
+                              borderRadius: '6px',
+                              padding: '0.4rem',
+                              color: 'var(--text-secondary)',
+                              cursor: 'pointer',
+                              transition: 'var(--transition-smooth)'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--primary)';
+                              e.currentTarget.style.color = '#fff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--card-border)';
+                              e.currentTarget.style.color = 'var(--text-secondary)';
+                            }}
+                            title="Edit Product"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(product.id)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.05)',
+                              border: '1px solid rgba(239, 68, 68, 0.15)',
+                              borderRadius: '6px',
+                              padding: '0.4rem',
+                              color: 'var(--danger)',
+                              cursor: 'pointer',
+                              transition: 'var(--transition-smooth)'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--danger)';
+                              e.currentTarget.style.color = '#fff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
+                              e.currentTarget.style.color = 'var(--danger)';
+                            }}
+                            title="Delete Product"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

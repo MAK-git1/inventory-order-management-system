@@ -21,4 +21,20 @@ apiClient.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// Interceptor for handling expired or invalid JWT sessions globally
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      // Avoid redirect loops if the login/signup calls themselves fail with 401
+      const isAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+      if (!isAuthPage) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;

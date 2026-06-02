@@ -53,10 +53,9 @@ class OrderItemResponse(OrderItemBase):
 
 class OrderCreate(BaseModel):
     """Schema for submitting a new order."""
-    customer_id: int = Field(
-        ..., 
-        gt=0, 
-        description="The database ID of the customer placing the order. Must exist",
+    customer_id: int | None = Field(
+        None, 
+        description="The database ID of the customer placing the order. If submitted by a customer, this is automatically set to the authenticated customer's ID.",
         examples=[42]
     )
     items: list[OrderItemCreate] = Field(

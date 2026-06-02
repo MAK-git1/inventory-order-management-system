@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.crud.customer import customer as crud_customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
+from app.models.customer import Customer
 
 router = APIRouter()
 
@@ -31,7 +32,8 @@ router = APIRouter()
 def create_customer(
     *,
     db: Session = Depends(deps.get_db),
-    customer_in: CustomerCreate
+    customer_in: CustomerCreate,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> CustomerResponse:
     existing_customer = crud_customer.get_by_email(db, email=customer_in.email)
     if existing_customer:
@@ -58,8 +60,14 @@ def create_customer(
 def read_customer(
     *,
     db: Session = Depends(deps.get_db),
-    id: int
+    id: int,
+    current_user: Customer = Depends(deps.get_current_user)
 ) -> CustomerResponse:
+    if current_user.role != "admin" and current_user.id != id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have enough privileges."
+        )
     customer_record = crud_customer.get(db=db, id=id)
     if not customer_record:
         raise HTTPException(
@@ -77,7 +85,8 @@ def read_customer(
 def read_customers(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> list[CustomerResponse]:
     return crud_customer.get_multi(db=db, skip=skip, limit=limit)
 
@@ -105,8 +114,14 @@ def update_customer(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    customer_in: CustomerUpdate
+    customer_in: CustomerUpdate,
+    current_user: Customer = Depends(deps.get_current_user)
 ) -> CustomerResponse:
+    if current_user.role != "admin" and current_user.id != id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have enough privileges."
+        )
     customer_record = crud_customer.get(db=db, id=id)
     if not customer_record:
         raise HTTPException(
@@ -141,7 +156,8 @@ def update_customer(
 def delete_customer(
     *,
     db: Session = Depends(deps.get_db),
-    id: int
+    id: int,
+    current_user: Customer = Depends(deps.get_current_admin)
 ) -> CustomerResponse:
     customer_record = crud_customer.get(db=db, id=id)
     if not customer_record:

@@ -24,15 +24,36 @@ class CustomerBase(BaseModel):
         description="Optional customer telephone contact",
         examples=["+1-555-0199"]
     )
+    role: str = Field(
+        "customer", 
+        description="The user's authorization role within the system",
+        examples=["customer"]
+    )
 
 class CustomerCreate(CustomerBase):
     """Schema used to register a new customer profile."""
     pass
 
+class CustomerSignUp(CustomerBase):
+    """Schema used to register a new customer user with a password."""
+    password: str = Field(
+        ..., 
+        min_length=6, 
+        description="The customer's secret login password (minimum 6 characters)",
+        examples=["superSecret123"]
+    )
+
 class CustomerUpdate(BaseModel):
     """Schema used to update specific attributes of an existing customer profile."""
     name: str | None = Field(None, min_length=1, max_length=255, examples=["Jane Smith"])
     email: EmailStr | None = Field(None, examples=["jane.smith@example.com"])
+    phone: str | None = Field(None, max_length=50, examples=["+1-555-0200"])
+
+class ProfileUpdate(BaseModel):
+    """Schema used to update the logged-in customer's profile details."""
+    name: str | None = Field(None, min_length=1, max_length=255, examples=["Jane Smith"])
+    email: EmailStr | None = Field(None, examples=["jane.smith@example.com"])
+    password: str | None = Field(None, min_length=6, description="Optional new password", examples=["newSecret123"])
     phone: str | None = Field(None, max_length=50, examples=["+1-555-0200"])
 
 class CustomerResponse(CustomerBase):
