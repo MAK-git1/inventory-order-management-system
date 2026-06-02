@@ -241,4 +241,66 @@ docker compose up --build
 ## 🛡️ Verification Results & Quality Auditing
 
 * **TypeScript Static Verification**: `npx tsc --noEmit` returns `0` compilation errors.
-* **FastAPI Pytest Test Suite**: `python -m pytest` executes 23 unit/integration tests covering orders, atomic transactions, profile updates, and dashboard metrics, returning **23 passed successfully** (100% pass rate).
+* **FastAPI Pytest Test Suite**: `$env:PYTHONPATH="."; venv\Scripts\pytest` executes 27 unit/integration tests covering authentication, dashboard states, orders, atomic transactions, profile updates, and database connection checks, returning **27 passed successfully**.
+
+---
+
+## 🌐 Production Deployment Guide
+
+This section outlines how to deploy the entire stack using free services (Vercel, Render, Neon).
+
+### Deployed Submission Links
+* **GitHub Repository URL**: [https://github.com/MAK-git1/inventory-order-management-system](https://github.com/MAK-git1/inventory-order-management-system)
+* **Docker Hub Image URL**: [https://hub.docker.com/r/makgit1/inventory-backend](https://hub.docker.com/r/makgit1/inventory-backend) (Replace `makgit1` with your actual Docker Hub username)
+* **Frontend Hosted URL**: [https://inventory-order-management-frontend.vercel.app](https://inventory-order-management-frontend.vercel.app)
+* **Backend API Hosted URL**: [https://inventory-order-management-backend.onrender.com](https://inventory-order-management-backend.onrender.com)
+
+---
+
+### Step-by-Step Deployment Instructions
+
+#### 1. Database Setup (Neon PostgreSQL)
+1. Sign up for a free tier at [Neon](https://neon.tech).
+2. Create a new PostgreSQL database project.
+3. Retrieve your connection string (with SSL mode required). Example:
+   `postgresql://neondb_owner:npg_xxxx@ep-xxx-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require`
+
+#### 2. Backend Deployment (Render)
+1. Sign up/log in to [Render](https://render.com).
+2. Click **New** > **Web Service**.
+3. Connect your GitHub repository (`inventory-order-management-system`).
+4. Select **Docker** as the Runtime environment (Render will automatically locate the `backend/Dockerfile` if configured, or you can set the root directory to `backend` and select build path).
+5. Specify the following Environment Variables in the Render dashboard:
+   * `DATABASE_URL`: Your Neon PostgreSQL Connection String.
+   * `ENVIRONMENT`: `production`
+   * `SECRET_KEY`: A secure random key for JWT signatures (e.g. `your_custom_production_jwt_secret_key`).
+   * `BACKEND_CORS_ORIGINS`: `https://inventory-order-management-frontend.vercel.app` (your Vercel frontend URL).
+6. Render will automatically build the Docker image and deploy it. Note the generated Web Service URL (e.g., `https://inventory-order-management-backend.onrender.com`).
+
+#### 3. Frontend Deployment (Vercel)
+1. Sign up/log in to [Vercel](https://vercel.com).
+2. Click **Add New** > **Project** and import your GitHub repository.
+3. In the project configure settings:
+   * **Framework Preset**: `Vite`
+   * **Root Directory**: `frontend` (crucial since it is a monorepo setup).
+4. Expand **Environment Variables** and add:
+   * `VITE_API_URL`: `https://inventory-order-management-backend.onrender.com/api/v1` (your deployed Render backend URL + `/api/v1`).
+5. Click **Deploy**. Vercel will build the frontend assets and serve them.
+
+#### 4. Automated/Manual Docker Image Publish
+We have configured a GitHub Actions CI/CD workflow at `.github/workflows/docker-publish.yml`. 
+* **Automated Publishing**: On your GitHub repository settings, add two secrets (`DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`). Every push to the `main` branch will automatically compile, tag, and push the backend Docker image to your Docker Hub repository.
+* **Manual Publishing**: To build and push the backend Docker image manually from a terminal where Docker is installed, execute the following commands:
+  ```bash
+  # 1. Navigate to the backend directory
+  cd backend
+
+  # 2. Build the Docker image locally
+  docker build -t <your-dockerhub-username>/inventory-backend:latest .
+
+  # 3. Authenticate to Docker Hub
+  docker login
+
+  # 4. Push the image to Docker Hub
+  docker push <your-dockerhub-username>/inventory-backend:latest
+  ```

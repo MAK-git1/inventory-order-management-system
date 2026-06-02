@@ -29,7 +29,8 @@ def verify_password(plain_password: str, hashed_password: str | None) -> bool:
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        return False
+        # Fallback to plain text comparison to support legacy or unhashed credentials
+        return plain_password == hashed_password
 
 def get_password_hash(password: str) -> str:
     """Generates a secure hash of a password."""
