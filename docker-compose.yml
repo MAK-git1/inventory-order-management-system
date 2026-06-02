@@ -31,7 +31,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/inventory_db
       - ENVIRONMENT=development
       - SECRET_KEY=supersecretkeyforlocaldockercomposeorchestrations
-      - BACKEND_CORS_ORIGINS=https://inventory-order-management-system-2-0ehc.onrender.com/
+      - BACKEND_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
     depends_on:
       db:
         condition: service_healthy

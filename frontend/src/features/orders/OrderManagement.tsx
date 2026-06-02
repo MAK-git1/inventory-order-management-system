@@ -186,12 +186,7 @@ export default function OrderManagement() {
           <Loader className="spin" size={32} style={{ animation: 'spin 1s linear infinite' }} />
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2rem',
-          alignItems: 'start'
-        }} className="responsive-grid">
+        <div className="responsive-grid">
           {/* LEFT PANEL: PLACE ORDER */}
           <div className="glass-card" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

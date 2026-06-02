@@ -478,7 +478,7 @@ export default function ProductManagement() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div className="form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
                 <button
                   type="button"
                   onClick={handleCloseModal}
@@ -545,7 +545,7 @@ export default function ProductManagement() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Are you sure you want to remove this product from the inventory? This action cannot be undone.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+            <div className="form-actions" style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
               <button
                 onClick={() => setDeleteConfirmId(null)}
                 style={{

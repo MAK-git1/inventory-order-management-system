@@ -38,17 +38,7 @@ export default function App() {
       transition: 'background-color 0.3s ease, color 0.3s ease'
     }}>
       {/* GLOBAL NAVBAR */}
-      <header className="glass-card" style={{
-        margin: '1.5rem',
-        marginBottom: '0',
-        padding: '1rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1.5rem',
-        borderRadius: 'var(--border-radius-md)'
-      }}>
+      <header className="glass-card app-header">
         {/* LOGO */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
@@ -77,7 +67,7 @@ export default function App() {
         </div>
 
         {/* NAVIGATION LINKS */}
-        <nav style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <nav className="app-nav">
           <button
             onClick={() => setActiveTab('products')}
             style={{
@@ -165,15 +155,7 @@ export default function App() {
       </header>
 
       {/* MAIN VIEW AREA */}
-      <main style={{
-        flex: 1,
-        padding: '1.5rem',
-        maxWidth: '1280px',
-        width: '100%',
-        margin: '0 auto',
-        display: 'flex',
-        boxSizing: 'border-box'
-      }}>
+      <main className="app-main">
         {activeTab === 'products' && <ProductManagement />}
         
         {activeTab === 'customers' && <CustomerManagement />}
@@ -182,14 +164,7 @@ export default function App() {
       </main>
 
       {/* FOOTER */}
-      <footer style={{
-        textAlign: 'center',
-        padding: '1.5rem',
-        color: 'var(--text-muted)',
-        fontSize: '0.85rem',
-        borderTop: '1px solid var(--card-border)',
-        margin: '0 1.5rem'
-      }}>
+      <footer className="app-footer">
         &copy; 2026 Tirupati Inventory System. Created for technical assessment.
       </footer>
     </div>

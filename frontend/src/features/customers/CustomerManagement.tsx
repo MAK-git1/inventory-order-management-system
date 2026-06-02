@@ -428,7 +428,7 @@ export default function CustomerManagement() {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div className="form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
                 <button
                   type="button"
                   onClick={handleCloseModal}
@@ -495,7 +495,7 @@ export default function CustomerManagement() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Are you sure you want to remove this customer profile? This action will permanently erase their details.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+            <div className="form-actions" style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
               <button
                 onClick={() => setDeleteConfirmId(null)}
                 style={{
