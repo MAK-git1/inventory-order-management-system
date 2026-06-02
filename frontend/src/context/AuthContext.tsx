@@ -14,8 +14,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, phone: string | null, password: string, role: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  signup: (name: string, email: string, phone: string | null, password: string, role: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', access_token);
       setToken(access_token);
       setUser(loggedUser);
+      return loggedUser;
     } catch (error) {
       throw error;
     }
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       // 2. Perform automatic login after successful registration
-      await login(email, password);
+      return await login(email, password);
     } catch (error) {
       throw error;
     }

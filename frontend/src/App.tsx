@@ -92,12 +92,15 @@ function NavigationMenu() {
 
       {/* DESKTOP NAV LINKS */}
       <nav className="app-nav desktop-nav" style={{ gap: '0.5rem', display: 'flex', alignItems: 'center' }}>
-        <Link to="/dashboard" style={navButtonStyle('/dashboard')}>
+        <Link to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} style={navButtonStyle(user.role === 'admin' ? '/admin/dashboard' : '/dashboard')}>
           <Home size={16} /> Dashboard
         </Link>
-        <Link to="/products" style={navButtonStyle('/products')}>
-          <Package size={16} /> Products
-        </Link>
+        
+        {user.role === 'admin' && (
+          <Link to="/products" style={navButtonStyle('/products')}>
+            <Package size={16} /> Products
+          </Link>
+        )}
         
         {user.role === 'admin' && (
           <Link to="/customers" style={navButtonStyle('/customers')}>
@@ -359,15 +362,15 @@ function NavigationMenu() {
             {/* Drawer Navigation Links */}
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
               <Link 
-                to="/dashboard" 
+                to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
                   padding: '0.8rem 1rem',
                   borderRadius: '8px',
-                  color: isActive('/dashboard') ? '#fff' : 'var(--text-secondary)',
-                  backgroundColor: isActive('/dashboard') ? 'var(--primary)' : 'transparent',
+                  color: isActive(user.role === 'admin' ? '/admin/dashboard' : '/dashboard') ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: isActive(user.role === 'admin' ? '/admin/dashboard' : '/dashboard') ? 'var(--primary)' : 'transparent',
                   fontWeight: 600,
                   textDecoration: 'none',
                   fontSize: '0.925rem',
@@ -376,24 +379,26 @@ function NavigationMenu() {
               >
                 <Home size={18} /> Dashboard
               </Link>
-              <Link 
-                to="/products" 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.8rem 1rem',
-                  borderRadius: '8px',
-                  color: isActive('/products') ? '#fff' : 'var(--text-secondary)',
-                  backgroundColor: isActive('/products') ? 'var(--primary)' : 'transparent',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  fontSize: '0.925rem',
-                  transition: 'var(--transition-smooth)'
-                }}
-              >
-                <Package size={18} /> Products
-              </Link>
+              {user.role === 'admin' && (
+                <Link 
+                  to="/products" 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.8rem 1rem',
+                    borderRadius: '8px',
+                    color: isActive('/products') ? '#fff' : 'var(--text-secondary)',
+                    backgroundColor: isActive('/products') ? 'var(--primary)' : 'transparent',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    fontSize: '0.925rem',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  <Package size={18} /> Products
+                </Link>
+              )}
               {user.role === 'admin' && (
                 <Link 
                   to="/customers" 
@@ -503,9 +508,31 @@ function MainLayout() {
       
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <CustomerDashboard />} />
-          <Route path="/products" element={<ProductManagement />} />
+          <Route path="/" element={<Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />} />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['customer']}>
+                <CustomerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/products" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ProductManagement />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/orders" element={<OrderManagement />} />
           
           <Route 
@@ -518,7 +545,7 @@ function MainLayout() {
           />
           
           <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />} />
         </Routes>
       </main>
 
@@ -557,11 +584,11 @@ function AppContent() {
       {/* PUBLIC PATHS (Redirect if already logged in) */}
       <Route 
         path="/login" 
-        element={user ? <Navigate to="/dashboard" replace /> : <Login />} 
+        element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace /> : <Login />} 
       />
       <Route 
         path="/signup" 
-        element={user ? <Navigate to="/dashboard" replace /> : <Signup />} 
+        element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace /> : <Signup />} 
       />
 
       {/* PROTECTED ROUTE SHELL */}

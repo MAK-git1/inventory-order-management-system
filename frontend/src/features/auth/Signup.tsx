@@ -37,8 +37,12 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      await signup(name, email, phone || null, password, role);
-      navigate('/dashboard');
+      const loggedUser = await signup(name, email, phone || null, password, role);
+      if (loggedUser.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       console.error(err);
       const detail = err.response?.data?.detail;

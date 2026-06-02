@@ -24,8 +24,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      const loggedUser = await login(email, password);
+      if (loggedUser.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       console.error(err);
       const detail = err.response?.data?.detail;

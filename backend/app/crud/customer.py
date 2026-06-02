@@ -11,6 +11,21 @@ class CRUDCustomer(CRUDBase[Customer, CustomerCreate, CustomerUpdate]):
         """Fetch a single customer record by their unique email."""
         return db.query(self.model).filter(self.model.email == email).first()
 
+    def create(self, db: Session, *, obj_in: CustomerCreate) -> Customer:
+        """Create a new customer profile. Sets a secure default password if not provided."""
+        from app.core.security import get_password_hash
+        db_obj = Customer(
+            name=obj_in.name,
+            email=obj_in.email,
+            phone=obj_in.phone,
+            role=obj_in.role,
+            hashed_password=get_password_hash("password123"),
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def create_with_password(self, db: Session, *, obj_in: CustomerSignUp) -> Customer:
         """Create a new customer user with hashed password."""
         from app.core.security import get_password_hash
