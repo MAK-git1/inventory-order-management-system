@@ -3,7 +3,7 @@ import axios from 'axios';
 // Purpose: Central API client configured with global baseURL, timeouts, and auth headers interceptors.
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'https://inventory-order-management-system-uvze.onrender.com/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
