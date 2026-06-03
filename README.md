@@ -1,306 +1,178 @@
-# 📦 Tirupati Inventory & Order Management System
+# 📦 Inventory & Order Management System
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![Neon DB](https://img.shields.io/badge/Neon-PostgreSQL-00E599?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
-[![Tests Status](https://img.shields.io/badge/Tests-23%20Passed-4c1?style=for-the-badge)](https://pytest.org)
 
-An enterprise-grade, high-concurrency **Inventory & Order Management System** built using a **FastAPI backend** (Python 3.12), a **React + Vite frontend** (TypeScript), and a **Neon Cloud Serverless PostgreSQL** database.
+A robust, full-stack **Inventory and Order Management System** engineered for high-concurrency order processing, real-time inventory tracking, and seamless user experiences. 
 
-This project delivers a premium **glassmorphic desktop/mobile user interface** utilizing Vanilla HSL design tokens, custom micro-animations, day/night theme synchronizations, and advanced database integrity controls (such as atomic transaction row locks).
-
----
-
-## 🌟 Key Highlights & Features
-
-### 🛒 High-Concurrency Order Desk
-* **Database Row Locking**: Issues explicit PostgreSQL row-level locks (`with_for_update()`) on product stock records at checkout, preventing race conditions or double-spend errors under heavy order concurrency.
-* **Atomic Transactions**: Deducts stock, registers line items, and inserts order logs inside a single transaction context—triggering `db.rollback()` on any failure to guarantee database state integrity.
-* **Captured Historical Pricing**: Persists the exact checkout price inside order details, safeguarding transaction records from future product catalog price adjustments.
-* **Dynamic Stock Checkers**: Renders real-time availability counters inside product dropdowns directly upon user selection.
-
-### 📦 Product & Inventory Lifecycle
-* **Full CRUD Lifecycle**: Register, retrieve, update, and catalog system products.
-* **SKU Uniqueness Constraints**: Enforces indexed, unique Stock Keeping Unit (SKU) validations both at the Pydantic API layer and DB level.
-* **Live Catalog Metrics**: Interactive statistics detailing out-of-stock items (Red), low stock alerts under 10 units (Orange), and healthy stock quantities (Green).
-
-### 👥 Customer Accounts & Hardened Security
-* **RFC-Compliant Emails**: Rigorous schema checks utilizing Pydantic `EmailStr` to guarantee strictly formatted customer entries.
-* **Password Complexity**: Enforces a strict minimum **8-character password policy** aligned seamlessly between Pydantic schemas and frontend views (`Signup.tsx` and `Profile.tsx`).
-* **Secure JWT Session Control**: Implements access tokens utilizing HS256 signatures with a 24-hour expiration window to limit session exposure.
-
-### 📱 Premium Responsive Mobile Layout
-* **Glassmorphic Navigation Drawer**: Automatically transitions from the horizontal inline navbar on desktop viewports to a clean top header and sliding hamburger navigation drawer on mobile/tablet viewports (`< 768px`).
-* **Personalized User Widget**: Features a custom-rendered profile card detailing the active customer's name, avatar, and security clearance level (Admin/Customer).
-* **Smooth Transitions**: Powered by hardware-accelerated animations (`slideInRight`) and blurred backdrop overlays for a premium native application feel.
-* **Harmonious Theme Synchronization**: HSL-tailored day/night modes synchronize seamlessly across modern dashboard grids, tables, and modal drawers.
+Built with a **FastAPI** backend and a **React + Vite** frontend, the system guarantees database integrity using advanced transactional controls and offers a premium, responsive glassmorphic UI.
 
 ---
 
-## 🏗️ System Architecture
+## ✨ Key Features
+
+### 🛒 Resilient Order Processing
+- **Concurrency Control**: Implements PostgreSQL row-level locks (`SELECT ... FOR UPDATE`) to eliminate race conditions and double-spending during simultaneous checkouts.
+- **Atomic Transactions**: Guarantees data consistency by wrapping stock deductions, line-item creation, and order logging in a single database transaction with automatic rollback on failure.
+- **Price Immutability**: Captures and persists the exact checkout price in the order details, protecting historical records from future catalog price changes.
+
+### 📦 Inventory Management
+- **Complete Product Lifecycle**: Create, read, update, and manage product catalog data seamlessly.
+- **SKU Integrity**: Enforces unique Stock Keeping Unit (SKU) validations at both the application (Pydantic) and database levels.
+- **Real-Time Stock Alerts**: Dynamic UI indicators highlight low-stock (orange) and out-of-stock (red) items instantly.
+
+### 🔐 Security & Authentication
+- **Secure Sessions**: JWT-based authentication using HS256 signatures with controlled expiration windows.
+- **Strict Validation**: RFC-compliant email verification and strict password complexity policies enforced via Pydantic.
+- **Role-Based Access**: Segregated capabilities for `admin` and standard `customer` accounts.
+
+### 💻 Modern, Responsive UI
+- **Glassmorphic Design**: A premium interface featuring blurred backdrops, smooth hardware-accelerated animations, and tailored HSL color tokens.
+- **Adaptive Layouts**: Seamlessly transitions from a comprehensive desktop dashboard to an intuitive mobile navigation drawer.
+- **Theme Synchronization**: Integrated Day/Night modes across the entire application interface.
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 graph TD
-    subgraph Frontend [React + Vite App]
+    subgraph Frontend [React + Vite Client]
         UI[User Interface & Dashboards]
-        State[Auth & Theme Context]
-        API_Client[Axios Client Layer]
+        State[Context Providers: Auth/Theme]
+        API_Client[Axios API Services]
     end
 
-    subgraph Backend [FastAPI Application]
-        Router[API router /api/v1]
-        Auth[OAuth2 / JWT Authentication]
-        Schemas[Pydantic v2 Schemas]
-        Models[SQLAlchemy 2.0 Models]
+    subgraph Backend [FastAPI Server]
+        Router[API Routing Layer]
+        Auth[JWT Authentication]
+        Schemas[Pydantic Validation]
+        Models[SQLAlchemy Models]
     end
 
-    subgraph Database [Database Services]
-        Neon[Neon PostgreSQL Cloud / Local SQLite]
+    subgraph Infrastructure [Data Layer]
+        DB[(PostgreSQL)]
     end
 
     UI --> State
     State --> API_Client
-    API_Client -->|HTTP REST Client / JSON| Router
+    API_Client -->|REST over HTTP| Router
     Router --> Auth
     Router --> Schemas
     Schemas --> Models
-    Models -->|SQLAlchemy ORM| Neon
+    Models -->|SQLAlchemy ORM| DB
 ```
 
 ---
 
-## 🗄️ Database ERD / Schema
+## 🗄️ Database Schema
 
-The system uses four main tables. Relationships are managed via foreign keys with cascading options:
+The core domain model consists of four interconnected tables:
 
-```
-  ┌───────────────┐          ┌───────────────┐
-  │   customers   │ 1      * │    orders     │
-  ├───────────────┤──────────┼───────────────┤
-  │ id (PK)       │          │ id (PK)       │
-  │ name          │          │ customer_id   │──┐
-  │ email (UQ)    │          │ total_amount  │  │
-  │ role          │          │ created_at    │  │
-  │ password_hash │          └───────────────┘  │
-  └───────────────┘                             │
-                                                │ 1
-  ┌───────────────┐          ┌───────────────┐  │
-  │   products    │ 1      * │  order_items  │  │
-  ├───────────────┤──────────┼───────────────┤  │
-  │ id (PK)       │          │ id (PK)       │  │
-  │ name          │          │ order_id (FK) │<─┘
-  │ sku (UQ)      │          │ product_id    │
-  │ price         │          │ quantity      │
-  │ stock_quantity│          │ price         │
-  └───────────────┘          └───────────────┘
-```
-
-* **Customers**: Manages credentials and roles (`admin` or `customer`). Has a 1-to-many relationship with **Orders**.
-* **Products**: Stores inventory items with unique SKU codes.
-* **Orders**: Groups purchases for a customer, recording total spend.
-* **OrderItems**: Connects orders to products, persisting the unit price *at the exact moment of order* (historical price preservation).
+* **Customers**: User identities, roles, and hashed credentials.
+* **Products**: Inventory catalog with unique SKUs and current stock levels.
+* **Orders**: Aggregated customer purchases.
+* **Order Items**: Line items connecting an Order to a Product, preserving the historical unit price.
 
 ---
 
-## 📂 Project Directory Structure
+## 🚀 Getting Started
 
-```
-inventory-order-management-system/
-├── backend/
-│   ├── app/
-│   │   ├── api/             # API Router definitions (v1 endpoints)
-│   │   ├── core/            # Config, security, and database connection setup
-│   │   ├── crud/            # Database CRUD implementation helpers
-│   │   ├── models/          # SQLAlchemy declarative base models
-│   │   ├── schemas/         # Pydantic data schemas & validators
-│   │   ├── services/        # Checkout and order placement business logic
-│   │   └── tests/           # Comprehensive Pytest suite
-│   ├── alembic/             # Database migration configuration scripts
-│   ├── requirements.txt     # Python dependencies list
-│   └── main.py              # Application entrypoint
-├── frontend/
-│   ├── src/
-│   │   ├── assets/          # Global assets & static files
-│   │   ├── components/      # Common UI elements (Modals, Buttons, Forms)
-│   │   ├── context/         # AuthContext, ThemeContext providers
-│   │   ├── features/        # Module-specific pages (Products, Orders, Dashboard)
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── services/        # Axios API clients
-│   │   └── App.tsx          # React main layout & routing declarations
-│   ├── package.json         # NPM script mappings & dependencies
-│   └── vite.config.ts       # Vite-specific parameters and dev server proxies
-├── docker-compose.yml       # Production-ready compose configuration
-└── README.md                # System documentation
-```
+### Prerequisites
+- **Docker** & **Docker Compose** (Recommended)
+- **Node.js** (v18+) & **Python** (3.12+) for local development
 
----
-
-## 📋 Environment Variables Reference
-
-### Backend Settings (`/backend/.env`)
-| Variable | Description | Example / Default |
-| :--- | :--- | :--- |
-| `PROJECT_NAME` | The title of your system | `"Inventory & Order Management System"` |
-| `ENVIRONMENT` | Toggle context (disables Swagger docs in `production`) | `development` |
-| `SECRET_KEY` | Cryptographic signature salt for JWT generation | `dev_secret_key_for_local_testing_only` |
-| `BACKEND_CORS_ORIGINS` | Comma-separated list of allowed origins | `http://localhost:3000,http://127.0.0.1:3000` |
-| `DATABASE_URL` | Cloud PostgreSQL or Local connection string | `postgresql://[user]:[pwd]@[host]/neondb?sslmode=require` |
-
-### Frontend Settings (`/frontend/.env`)
-| Variable | Description | Example / Default |
-| :--- | :--- | :--- |
-| `VITE_API_URL` | Endpoint pointing to backend REST API v1 path | `http://127.0.0.1:8000/api/v1` |
-
----
-
-## 🚀 Local Setup Instructions
-
-Ensure you have **Python 3.12** and **Node.js (v18+)** installed.
-
-### 1. Backend Setup (FastAPI)
-
-1. **Navigate to the backend directory and create a virtual environment**:
-   ```bash
-   cd backend
-   python -m venv venv
-   ```
-2. **Activate the virtual environment**:
-   * **On Windows (PowerShell / cmd)**:
-     ```powershell
-     .\venv\Scripts\activate
-     ```
-   * **On macOS/Linux**:
-     ```bash
-     source venv/bin/activate
-     ```
-3. **Install core dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Configure Environment Variables**:
-   Create a `.env` file from the example:
-   ```bash
-   cp .env.example .env
-   ```
-   *Note: Open `.env` and fill in your connection `DATABASE_URL` (SQLite file `sqlite:///./inventory.db` or Neon PostgreSQL).*
-5. **Run DB Migrations**:
-   Ensure Alembic upgrades the schema:
-   ```bash
-   alembic upgrade head
-   ```
-6. **Run the Diagnostic Test Suite**:
-   ```bash
-   python -m pytest
-   ```
-7. **Start the FastAPI Application Server**:
-   ```bash
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-   The backend API docs will be active at `http://127.0.0.1:8000/docs`.
-
----
-
-### 2. Frontend Setup (React + Vite)
-
-1. **Navigate to the frontend directory and install dependencies**:
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-2. **Configure Environment Variables**:
-   Verify `/frontend/.env` is set up with the correct API URL:
-   ```env
-   VITE_API_URL=http://127.0.0.1:8000/api/v1
-   ```
-3. **Start the local development server**:
-   ```bash
-   npm run dev
-   ```
-   Vite will host the web interface at `http://localhost:3000`.
-
----
-
-## 🐳 Docker Container Orchestration
-
-To run the entire stack (PostgreSQL database service, FastAPI REST backend, and Nginx frontend web server) locally with a single command:
+### Method 1: Docker (Recommended)
+Launch the entire stack (PostgreSQL, FastAPI Backend, React Frontend) with a single command:
 
 ```bash
-docker compose up --build
+# Build and start all services
+docker-compose up --build
+```
+- **Web UI**: `http://localhost:3000`
+- **API Server**: `http://localhost:8000`
+- **API Documentation**: `http://localhost:8000/docs`
+
+### Method 2: Local Development
+
+#### 1. Backend API
+```bash
+cd backend
+python -m venv venv
+
+# Activate virtual environment
+# Windows: .\venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env and supply your DATABASE_URL
+
+# Apply database migrations
+alembic upgrade head
+
+# Start development server
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### Port Mappings
-* **React Web UI**: `http://localhost:3000`
-* **FastAPI Swagger Docs**: `http://localhost:8000/docs`
-* **PostgreSQL Database Server**: `localhost:5432`
+#### 2. Frontend Client
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+# Ensure VITE_API_URL=http://localhost:8000/api/v1 is set
+
+# Start development server
+npm run dev
+```
 
 ---
 
-## 🛡️ Verification Results & Quality Auditing
+## 📂 Project Structure
 
-* **TypeScript Static Verification**: `npx tsc --noEmit` returns `0` compilation errors.
-* **FastAPI Pytest Test Suite**: `$env:PYTHONPATH="."; venv\Scripts\pytest` executes 27 unit/integration tests covering authentication, dashboard states, orders, atomic transactions, profile updates, and database connection checks, returning **27 passed successfully**.
+```text
+inventory-order-management-system/
+├── backend/
+│   ├── app/                 # FastAPI application core
+│   │   ├── api/             # Route handlers & endpoints
+│   │   ├── core/            # Config & Security utilities
+│   │   ├── models/          # SQLAlchemy definitions
+│   │   └── schemas/         # Pydantic models
+│   ├── alembic/             # Database migrations
+│   ├── tests/               # Pytest test suite
+│   ├── requirements.txt     # Python dependencies
+│   └── main.py              # Application entrypoint
+├── frontend/
+│   ├── src/                 # React application code
+│   │   ├── components/      # Reusable UI elements
+│   │   ├── features/        # Domain-specific modules (Auth, Inventory, Orders)
+│   │   └── services/        # Axios API clients
+│   ├── package.json         # Node.js dependencies
+│   └── vite.config.ts       # Vite configuration
+└── docker-compose.yml       # Docker orchestration configuration
+```
 
 ---
 
-## 🌐 Production Deployment Guide
+## 🛡️ Testing & Quality Assurance
 
-This section outlines how to deploy the entire stack using free services (Vercel, Render, Neon).
+To ensure system reliability, the backend features a comprehensive test suite. Run the tests using Pytest:
 
-### Deployed Submission Links
-* **GitHub Repository URL**: [https://github.com/MAK-git1/inventory-order-management-system](https://github.com/MAK-git1/inventory-order-management-system)
-* **Docker Hub Image URL**: [https://hub.docker.com/r/makgit1/inventory-backend](https://hub.docker.com/r/makgit1/inventory-backend) (Replace `makgit1` with your actual Docker Hub username)
-* **Frontend Hosted URL**: [https://inventory-order-management-frontend.vercel.app](https://inventory-order-management-frontend.vercel.app)
-* **Backend API Hosted URL**: [https://inventory-order-management-backend.onrender.com](https://inventory-order-management-backend.onrender.com)
+```bash
+cd backend
+python -m pytest
+```
 
 ---
-
-### Step-by-Step Deployment Instructions
-
-#### 1. Database Setup (Neon PostgreSQL)
-1. Sign up for a free tier at [Neon](https://neon.tech).
-2. Create a new PostgreSQL database project.
-3. Retrieve your connection string (with SSL mode required). Example:
-   `postgresql://neondb_owner:npg_xxxx@ep-xxx-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require`
-
-#### 2. Backend Deployment (Render)
-1. Sign up/log in to [Render](https://render.com).
-2. Click **New** > **Web Service**.
-3. Connect your GitHub repository (`inventory-order-management-system`).
-4. Select **Docker** as the Runtime environment (Render will automatically locate the `backend/Dockerfile` if configured, or you can set the root directory to `backend` and select build path).
-5. Specify the following Environment Variables in the Render dashboard:
-   * `DATABASE_URL`: Your Neon PostgreSQL Connection String.
-   * `ENVIRONMENT`: `production`
-   * `SECRET_KEY`: A secure random key for JWT signatures (e.g. `your_custom_production_jwt_secret_key`).
-   * `BACKEND_CORS_ORIGINS`: `https://inventory-order-management-frontend.vercel.app` (your Vercel frontend URL).
-6. Render will automatically build the Docker image and deploy it. Note the generated Web Service URL (e.g., `https://inventory-order-management-backend.onrender.com`).
-
-#### 3. Frontend Deployment (Vercel)
-1. Sign up/log in to [Vercel](https://vercel.com).
-2. Click **Add New** > **Project** and import your GitHub repository.
-3. In the project configure settings:
-   * **Framework Preset**: `Vite`
-   * **Root Directory**: `frontend` (crucial since it is a monorepo setup).
-4. Expand **Environment Variables** and add:
-   * `VITE_API_URL`: `https://inventory-order-management-backend.onrender.com/api/v1` (your deployed Render backend URL + `/api/v1`).
-5. Click **Deploy**. Vercel will build the frontend assets and serve them.
-
-#### 4. Automated/Manual Docker Image Publish
-We have configured a GitHub Actions CI/CD workflow at `.github/workflows/docker-publish.yml`. 
-* **Automated Publishing**: On your GitHub repository settings, add two secrets (`DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`). Every push to the `main` branch will automatically compile, tag, and push the backend Docker image to your Docker Hub repository.
-* **Manual Publishing**: To build and push the backend Docker image manually from a terminal where Docker is installed, execute the following commands:
-  ```bash
-  # 1. Navigate to the backend directory
-  cd backend
-
-  # 2. Build the Docker image locally
-  docker build -t <your-dockerhub-username>/inventory-backend:latest .
-
-  # 3. Authenticate to Docker Hub
-  docker login
-
-  # 4. Push the image to Docker Hub
-  docker push <your-dockerhub-username>/inventory-backend:latest
-  ```
+*Built with ❤️ for High-Performance Operations.*
