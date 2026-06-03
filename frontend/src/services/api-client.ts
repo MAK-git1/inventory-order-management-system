@@ -2,8 +2,14 @@ import axios from 'axios';
 
 // Purpose: Central API client configured with global baseURL, timeouts, and auth headers interceptors.
 
+// Ensure VITE_API_URL has /api/v1 if it points to the render backend directly
+let configuredUrl = import.meta.env.VITE_API_URL || '/api/v1';
+if (configuredUrl && !configuredUrl.endsWith('/api/v1') && !configuredUrl.endsWith('/api/v1/')) {
+  configuredUrl = configuredUrl.replace(/\/$/, '') + '/api/v1';
+}
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: configuredUrl,
   headers: {
     'Content-Type': 'application/json',
   },
